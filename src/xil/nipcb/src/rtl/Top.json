@@ -1,0 +1,36 @@
+{
+  "bitwidth": 32,
+  "memories": [
+    {
+      "name": "flash",
+      "module": "rom_ahb",
+      "base": "0000_0000",
+      "size": "0000_8000",
+      "init": "./sim/bram.mem"
+    },
+    {
+      "name": "sram",
+      "module": "ram_ahb",
+      "base": "2000_0000",
+      "size": "0000_4000"
+    }
+  ],
+  "peripherals": [
+    {
+      "name": "nipcb_0",
+      "module": "nipcb_ahb",
+      "file": "./peripherals/config/nipcb.json",
+      "base": "4000_0000",
+      "size": "0000_1000",
+      "expose": false
+    },
+    {
+      "name": "led_0",
+      "module": "led_ahb",
+      "file": "./peripherals/config/led.json",
+      "base": "4000_1000",
+      "size": "0000_1000",
+      "expose": false
+    }
+  ]
+}

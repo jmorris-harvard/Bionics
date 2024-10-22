@@ -1,0 +1,38 @@
+{
+  "name": "timer",
+  "ports": {
+    "triggers": [
+      {
+        "name": "T0",
+        "bits": [
+          {
+            "name": "start"
+          }
+        ]
+      }
+    ],
+    "flags": [
+      {
+        "name": "F0",
+        "bits": [
+          {
+            "name": "running"
+          }
+        ]
+      }
+    ],
+    "configs": [],
+    "iregs": [
+      {
+        "name": "din"
+      }
+    ],
+    "oregs": [
+      {
+        "name": "dout"
+      }
+    ],
+    "gpio": [],
+    "irq": true
+  }
+}

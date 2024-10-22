@@ -1,0 +1,56 @@
+{
+  "name": "template",
+  "ports": {
+    "triggers": [
+      {
+        "name": "T0",
+        "bits": [
+          {
+            "name": "Start"
+          }
+        ]
+      }
+    ],
+    "flags": [
+      {
+        "name": "F0",
+        "bits": [
+          {
+            "name": "Running"
+          }
+        ]
+      }
+    ],
+    "configs": [
+      {
+        "name": "C0",
+        "bits": [
+          {
+            "name": "Enable"
+          }
+        ]
+      }
+    ],
+    "iregs": [
+      {
+        "name": "I0"
+      },
+      {
+        "name": "I1"
+      }
+    ],
+    "oregs": [
+      {
+        "name": "O0"
+      }
+    ],
+    "gpio": [
+      {
+        "name": "G0",
+        "direction": "output",
+        "bitwidth": 8
+      }
+    ],
+    "irq": true
+  }
+}

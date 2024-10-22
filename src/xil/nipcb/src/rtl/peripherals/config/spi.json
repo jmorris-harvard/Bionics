@@ -1,0 +1,48 @@
+{
+  "name": "spi",
+  "ports": {
+    "triggers": [
+      {
+        "name": "T0",
+        "bits": [
+          {
+            "name": "send"
+          },
+          {
+            "name": "recv"
+          }
+        ]
+      }
+    ],
+    "flags": [],
+    "configs": [],
+    "iregs": [
+      {
+        "name": "tdata"
+      }
+    ],
+    "oregs": [
+      {
+        "name": "rdata"
+      }
+    ],
+    "gpio": [
+      {
+        "name": "csn",
+        "direction": "output",
+        "bitwidth": 1
+      },
+      {
+        "name": "sclk",
+        "direction": "output",
+        "bitwidth": 1
+      },
+      {
+        "name": "sdio",
+        "direction": "inout",
+        "bitwidth": 1
+      }
+    ],
+    "irq": false
+  }
+}

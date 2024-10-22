@@ -1,0 +1,26 @@
+{
+  "name": "led",
+  "ports": {
+    "triggers": [],
+    "flags": [],
+    "configs": [],
+    "iregs": [
+      {
+        "name": "led_in"
+      }
+    ],
+    "oregs": [
+      {
+        "name": "led_out"
+      }
+    ],
+    "gpio": [
+      {
+        "name": "led_gpio",
+        "direction": "output",
+        "bitwidth": 8
+      }
+    ],
+    "irq": false
+  }
+}

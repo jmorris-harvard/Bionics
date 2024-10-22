@@ -1,0 +1,104 @@
+{
+  "name": "nipcb",
+  "ports": {
+    "triggers": [
+      {
+        "name": "ni_t",
+        "bits": [
+          {
+            "name": "stimulation_trigger"
+          }
+        ]
+      }
+    ],
+    "flags": [
+      {
+        "name": "ni_f",
+        "bits": [
+          {
+            "name": "stimulation_running"
+          }
+        ]
+      }
+    ],
+    "configs": [
+      {
+        "name": "ni_c",
+        "bits": [
+          {
+            "name": "enable"
+          }
+        ]
+      }
+    ],
+    "iregs": [
+      {
+        "name": "stimulation_channel_select"
+      },
+      {
+        "name": "stimulation_cycles_high"
+      },
+      {
+        "name": "stimulation_cycles_low"
+      },
+      {
+        "name": "stimulation_cycles_delay"
+      },
+      {
+        "name": "stimulation_cycles_stall"
+      },
+      {
+        "name": "stimulation_cycles_count"
+      },
+      {
+        "name": "stimulation_magnitude_high"
+      },
+      {
+        "name": "stimulation_magnitude_low"
+      }
+    ],
+    "oregs": [
+      {
+        "name": "output"
+      }
+    ],
+    "gpio": [
+      {
+        "name": "ni_csn_hp_dac",
+        "direction": "output",
+        "bitwidth": 1
+      },
+      {
+        "name": "ni_csn_adc",
+        "direction": "output",
+        "bitwidth": 1
+      },
+      {
+        "name": "ni_sdio",
+        "direction": "inout",
+        "bitwidth": 1
+      },
+      {
+        "name": "ni_sclk",
+        "direction": "output",
+        "bitwidth": 1
+      },
+      {
+        "name": "ni_pga_gain",
+        "direction": "output",
+        "bitwidth": 3
+      },
+      {
+        "name": "ni_sel_ch",
+        "direction": "output",
+        "bitwidth": 4
+      },
+      {
+        "name": "ni_en_ch",
+        "direction": "output",
+        "bitwidth": 4
+      }
+    ],
+    "irq": true
+  }
+}
