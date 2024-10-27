@@ -101,7 +101,7 @@ module tb ();
 	// --- Begin sram Memory ---
 
 	bram #(
-		.MEM_DEPTH (32'h0000_4000)
+		.MEM_DEPTH (32'h0000_2000)
 	) sram (
 		.MCLK (sram_mclk),
 		.MRESETn (sram_mresetn),

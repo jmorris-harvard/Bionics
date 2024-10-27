@@ -3,12 +3,12 @@
 ./src/rtl/peripherals/led_ahb.sv
 ./src/rtl/peripherals/ahb_interconnect.v
 ./src/rtl/peripherals/ahb_interconnect_master.sv
+./src/rtl/peripherals/nipcb.v
 ./src/rtl/peripherals/nipcb_ahb.sv
 ./src/rtl/peripherals/ahb_defs.v
 ./src/rtl/peripherals/mem_ahb_interpreter.sv
 ./src/rtl/peripherals/timer.v
 ./src/rtl/peripherals/spi.v
-./src/rtl/peripherals/nipcb.v
 ./src/rtl/core/cm0_top_dbg.v
 ./src/rtl/core/cm0_top_clk.v
 ./src/rtl/core/cm0_rst_send_set.v

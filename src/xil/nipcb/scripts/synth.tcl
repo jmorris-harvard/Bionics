@@ -47,9 +47,10 @@ foreach s $synthIps {
   set localSynthIpObj [get_ips $moduleName]
   set localSynthIpFilename [get_property "IP_FILE" $localSynthIpObj]
   set localSynthIpFile [get_files $localSynthIpFilename]
+  set_property generate_synth_checkpoint false $localSynthIpFile
   generate_target all $localSynthIpFile -force
-  # Synth IP
-  synth_ip $localSynthIpObj
+  # Using global synthesis no need to generate dcp
+  # synth_ip $localSynthIpObj
 }
 
 set readIpFilename [file join $projectDir "readIp.txt"]
@@ -68,9 +69,10 @@ foreach r $readIps {
   set localReadIpObj [get_ips [file rootname [file tail $r]]]
   set localReadIpFilename [get_property "IP_FILE" $localReadIpObj]
   set localReadIpFile [get_files $localReadIpFilename]
+  set_property generate_synth_checkpoint false $localSynthIpFile
   generate_target all $localReadIpObj -force
-  # Synth IP
-  synth_ip $localReadIpObj
+  # Using global synthesis
+  # synth_ip $localReadIpObj
 }
 
 # Read All Sources
@@ -96,7 +98,7 @@ opt_design
 place_design
 route_design
 report_utilization -file $buildDir/utilization.rpt
-report_timing -file $buildDir/timing.rpt
+report_timing -nworst 100 -file $buildDir/timing.rpt
 report_power -file $buildDir/power.rpt
 
 # Write Checkpoint

@@ -55,13 +55,13 @@ module bram
 	always @( posedge MCLK ) begin
 		if ( !MRESETn ) begin
 			if ( (INIT_FILE.len() == 0) || ($system($sformatf("/usr/bin/test -f %s", INIT_FILE)) != 0) ) begin
-        $display ("Initializing mem to 0");
+        // $display ("Initializing mem to 0");
 				for ( integer idx = 0; idx <= REGS_SIZE-1; idx = idx+1 ) begin
 					regfile[_addr] <= 0;
 				end
 			end
 			else begin
-        $display ("Loading memory with init file");
+        // $display ("Loading memory with init file");
 				$readmemh(INIT_FILE, regfile);
 			end
         end

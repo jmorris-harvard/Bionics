@@ -75,6 +75,8 @@ localparam ni_stimulation_magnitude_neutral = 8'h7F;
 assign ni_en_ch = en_ch;
 assign ni_sel_ch = sel_ch;
 
+assign ni_pga_gain = 3'b000;
+
 // ---- or stimulation and recording signals
 assign en = stimulation_en;
 

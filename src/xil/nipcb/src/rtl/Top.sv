@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module Top (
 	// Clocks and Resets
 	input wire CLK,
@@ -219,7 +220,7 @@ module Top (
 
 		.M1_PASSTHROUGH (0),
 		.M1_BASEADDR (32'h2000_0000),
-		.M1_SIZE (32'h0000_4000),
+		.M1_SIZE (32'h0000_2000),
 
 		.M2_PASSTHROUGH (0),
 		.M2_BASEADDR (32'h4000_0000),
@@ -332,7 +333,7 @@ module Top (
 
 	mem_ahb_interpreter #(
 		.DATA_WIDTH (32),
-		.MEM_BYTES (32'h0000_4000)
+		.MEM_BYTES (32'h0000_2000)
 	) sram_mem_interpreter_inst (
 		.HCLK (sram_hclk),
 		.HRESETn (sram_hresetn),

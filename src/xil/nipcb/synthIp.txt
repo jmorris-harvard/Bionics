@@ -1,0 +1,4 @@
+wizard.config
+fifo.config
+ram.config
+rom.config
