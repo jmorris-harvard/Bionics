@@ -40,6 +40,8 @@ wire [31:0] wire_in_00; // configuration
 // wire_in_00[1] = program_reset (active high)
 // wire_in_00[2] = write_mem (active high)
 
+wire [31:0] wire_in_01; // reading byte count
+
 // ---- outs
 wire  [31:0] wire_out_20;
 
@@ -112,7 +114,7 @@ assign program_reset  = wire_in_00[1];
 genvar i;
 generate
 for (i = 0; i < 8; i = i + 1) begin
-  assign led[i] = ( program_reset ) ? 1'b0 : 
+  assign led[i] = ( program_reset ) ? ( addrb[i + 2] ) ? 1'b0 : 1'bz : 
                   ( led_0_led_gpio[i] ) ? 1'b0 : 1'bz;
 end
 endgenerate
@@ -207,7 +209,7 @@ Top Top_inst (
 fifo pipe_in_fifo (
   .rst (~program_reset),
   .wr_clk (okClk),
-  .rd_clk (sys_clk),
+  .rd_clk (core_clk),
   .din (pipe_in_data),
   .wr_en (pipe_in_write),
   .rd_en (web),
@@ -235,13 +237,13 @@ fifo pipe_out_fifo (
 // state machines
 // -- programming
 localparam ROMSIZE = 32'h8000; 
-always @(posedge sys_clk) begin
+always @(posedge core_clk) begin
   if ( ~program_reset ) begin
     addrb <= 32'hFFFFFFFC;
   end else begin
     web <= 1'b0;
     if ( write_mem ) begin 
-      if ( ~pipe_in_empty ) begin
+      if ( ~pipe_in_empty & ~web ) begin
         addrb <= addrb + 32'h4;
         web <= 1'b1;
       end

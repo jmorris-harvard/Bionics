@@ -3,6 +3,8 @@ PART:=xc7a200tfbg484-1
 TOP:=TopWrapper
 # BOARD:=digilentinc.com:arty-a7-100:part0:1.0
 
+
+MASTERSCRIPTDIR:=../../scripts/tcl
 TEMPDIR:=./temp
 BUILDDIR:=./build
 SCRIPTSDIR:=./scripts
@@ -21,6 +23,7 @@ all:
 
 preprocessing: clean synthIpFile readIpFile srcFile 
 	@mkdir -p $(TEMPDIR) # Make Directory For Temporary Files
+	@cp $(MASTERSCRIPTDIR)/* ./scripts
 
 srcFile:
 	@find $(SRCDIR) -name "*.v" -o -name "*.sv" | grep "" | sed "s/.\/src\///g" > src.txt
