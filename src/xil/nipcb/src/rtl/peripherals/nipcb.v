@@ -30,8 +30,12 @@ module nipcb_core (
   input wire [31:0]   ni_recording_cycles_stall,
   input wire [2:0]    ni_recording_pga_gain,
 
-  // outputs
-  output wire [31:0]  ni_recording_data,
+  // outputs (to fifo)
+  output wire ni_recording_fifo_clk,
+  output wire ni_recording_fifo_rst,
+  output wire [31:0]  ni_recording_fifo_din,
+  output wire ni_recording_fifo_wr,
+  input wire ni_recording_fifo_full,
 
   // flags
   output wire ni_recording_running,
@@ -109,6 +113,8 @@ reg [2:0] recording_pga_gain;
 
 reg recording_running;
 
+reg recording_fifo_wr;
+
 localparam recording_sel_ch = 4'h0;
 
 // routing
@@ -134,6 +140,12 @@ assign ni_stimulation_running = stimulation_running;
 assign ni_recording_running = recording_running;
 assign ni_pga_gain = recording_pga_gain;
 assign recording_valid_ch = ni_recording_channel_select[recording_en_ch];
+
+// --- fifo signals
+assign ni_recording_fifo_clk = clk;
+assign ni_recording_fifo_rst = ni_recording_clear | ~rstn;
+assign ni_recording_fifo_wr = recording_fifo_wr;
+assign ni_recording_fifo_din = recording_data;
 
 // Instances
 // -- Common
@@ -208,7 +220,7 @@ localparam s0_01 = 2'b01;
 localparam s0_10 = 2'b10; 
 localparam s0_11 = 2'b11;
 always @(posedge clk) begin
-  if (~rstn) begin
+  if ( ~rstn ) begin
     stimulation_send <= 1'b0;
     stimulation_en <= 1'b0;
     stimulation_timer_trigger <= 1'b0;
@@ -382,7 +394,7 @@ always @(posedge clk) begin
     recording_pending <= 1'b0;
     recording_recv <= 1'b0;
     recording_en <= 1'b0;
-    recording_wr_fifo <= 1'b0;
+    recording_fifo_wr <= 1'b0;
     recording_timer_trigger <= 1'b0;
     recording_en_ch <= 2'b00;
     recording_switch_pending <= 1'b0;
@@ -394,7 +406,7 @@ always @(posedge clk) begin
     s1_01: begin
       // reset
       recording_en <= 1'b0;
-      recording_wr_fifo <= 1'b0;
+      recording_fifo_wr <= 1'b0;
       recording_en_ch <= 2'b00;
       recording_pending <= 1'b0;
       recording_timer_trigger <= 1'b0;
@@ -411,7 +423,7 @@ always @(posedge clk) begin
     s1_01: begin
       // idle
       recording_en <= 1'b0;
-      recording_wr_fifo <= 1'b0;
+      recording_fifo_wr <= 1'b0;
       recording_en_ch <= 2'b00;
       recording_pending <= 1'b0;
       recording_timer_trigger <= 1'b0;
@@ -428,7 +440,7 @@ always @(posedge clk) begin
     s1_10: begin
       // queue
       recording_en <= 1'b0;
-      recording_wr_fifo <= 1'b0;
+      recording_fifo_wr <= 1'b0;
       recording_pending <= 1'b0;
       recording_timer_trigger <= 1'b0;
       recording_switch_pending <= 1'b0;
@@ -453,7 +465,7 @@ always @(posedge clk) begin
     s1_11: begin
       // recording
       recording_timer_trigger <= 1'b0;
-      recording_wr_fifo <= 1'b0;
+      recording_fifo_wr <= 1'b0;
       recording_recv <= 1'b0;
       
       // stall to settle input / allow signal propagation
@@ -504,7 +516,7 @@ always @(posedge clk) begin
         // send data on last channel
         if ( recording_en_ch == 2'b11 ) begin
           // write to fifo
-          recording_wr_fifo <= 1'b1;
+          recording_fifo_wr <= 1'b1;
         end
         // move to next channel
         recording_en_ch <= recording_en_ch + 2'b01;

@@ -1,4 +1,3 @@
-`timescale 1ns / 1ps
 module nipcb #(
 	parameter integer DATA_WIDTH = 32
 ) (
@@ -23,9 +22,6 @@ module nipcb #(
 	input		[DATA_WIDTH - 1:0]		I_stimulation_cycles_count,
 	input		[DATA_WIDTH - 1:0]		I_stimulation_magnitude_high,
 	input		[DATA_WIDTH - 1:0]		I_stimulation_magnitude_low,
-	input		[DATA_WIDTH - 1:0]		I_recording_channel_select,
-	input		[DATA_WIDTH - 1:0]		I_recording_cycles_stall,
-	input		[DATA_WIDTH - 1:0]		I_recording_pga_gain,
 
 	// Output Registers
 	output		[DATA_WIDTH - 1:0]		O_output,
@@ -38,11 +34,6 @@ module nipcb #(
 	output		[2:0]		ni_pga_gain,
 	output		[3:0]		ni_sel_ch,
 	output		[3:0]		ni_en_ch,
-	output		[0:0]		recording_fifo_clk,
-	output		[0:0]		recording_fifo_rst,
-	output		[31:0]		recording_fifo_din,
-	output		[0:0]		recording_fifo_wr,
-	input		[0:0]		recording_fifo_full,
 	// IRQ
 	output		IRQ
 );
@@ -51,20 +42,15 @@ module nipcb #(
 	// ---- Bits
 	wire T_ni_t_b0_stimulation_trigger;
 	assign T_ni_t_b0_stimulation_trigger = T_ni_t[0];
-	wire T_ni_t_b1_recording_trigger;
-	assign T_ni_t_b1_recording_trigger = T_ni_t[1];
-	wire T_ni_t_b2_recording_clear_fifo;
-	assign T_ni_t_b2_recording_clear_fifo = T_ni_t[2];
 
 	// -- Flags
-	localparam integer F_ni_f_FLAG_BIT_N = 2;
+	localparam integer F_ni_f_FLAG_BIT_N = 1;
 
 	// ---- Bits
 	wire F_ni_f_b0_stimulation_running;
-	wire F_ni_f_b1_recording_running;
 
 	// ---- Locations
-	assign F_ni_f[F_ni_f_FLAG_BIT_N - 1:0] = {F_ni_f_b1_recording_running, F_ni_f_b0_stimulation_running};
+	assign F_ni_f[F_ni_f_FLAG_BIT_N - 1:0] = {F_ni_f_b0_stimulation_running};
 	assign F_ni_f[DATA_WIDTH - 1:F_ni_f_FLAG_BIT_N] = {(DATA_WIDTH - F_ni_f_FLAG_BIT_N - 1){1'b0}};
 
 	// -- Configurations
@@ -95,21 +81,6 @@ module nipcb #(
     .ni_stimulation_magnitude_low (I_stimulation_magnitude_low),
 
     .ni_stimulation_running (F_ni_f_b0_stimulation_running),
-
-    .ni_recording_trigger (T_ni_t_b1_recording_trigger),
-    .ni_recording_clear (T_ni_t_b2_recording_clear),
-
-    .ni_recording_channel_select (I_recording_channel_select[3:0]),
-    .ni_recording_cycles_stall (I_recording_cycles_stall),
-    .ni_recording_pga_gain (I_recording_pga_gain[2:0]),
-
-    .ni_recording_running (F_ni_f_b1_recording_running),
-
-    .ni_recording_fifo_clk (recording_fifo_clk),
-    .ni_recording_fifo_rst (recording_fifo_rst),
-    .ni_recording_fifo_din (recording_fifo_din),
-    .ni_recording_fifo_wr (recording_fifo_wr),
-    .ni_recording_fifo_full (recording_fifo_full),
     
     .ni_csn_hp_dac (ni_csn_hp_dac),
     .ni_csn_adc (ni_csn_adc),
@@ -130,7 +101,7 @@ module nipcb_register_io #(
 	localparam integer TRIG_COUNT = 1,
 	localparam integer FLAG_COUNT = 1,
 	localparam integer CONF_COUNT = 1,
-	localparam integer IREG_COUNT = 11,
+	localparam integer IREG_COUNT = 8,
 	localparam integer OREG_COUNT = 1,
 	localparam integer DATA_BYTES = DATA_WIDTH / 8,
 	localparam integer REGS_COUNT = TRIG_COUNT + FLAG_COUNT + CONF_COUNT + IREG_COUNT + OREG_COUNT,
@@ -157,11 +128,6 @@ module nipcb_register_io #(
 	output	[2:0]	ni_pga_gain,
 	output	[3:0]	ni_sel_ch,
 	output	[3:0]	ni_en_ch,
-	output	[0:0]	recording_fifo_clk,
-	output	[0:0]	recording_fifo_rst,
-	output	[31:0]	recording_fifo_din,
-	output	[0:0]	recording_fifo_wr,
-	input	[0:0]	recording_fifo_full,
 	// IRQ
 	output		IRQ
 );
@@ -313,9 +279,6 @@ module nipcb_register_io #(
 		.I_stimulation_cycles_count (iregs[5]),
 		.I_stimulation_magnitude_high (iregs[6]),
 		.I_stimulation_magnitude_low (iregs[7]),
-		.I_recording_channel_select (iregs[8]),
-		.I_recording_cycles_stall (iregs[9]),
-		.I_recording_pga_gain (iregs[10]),
 		.O_output (oregs[0]),
 
 		.ni_csn_hp_dac (ni_csn_hp_dac),
@@ -325,11 +288,6 @@ module nipcb_register_io #(
 		.ni_pga_gain (ni_pga_gain),
 		.ni_sel_ch (ni_sel_ch),
 		.ni_en_ch (ni_en_ch),
-		.recording_fifo_clk (recording_fifo_clk),
-		.recording_fifo_rst (recording_fifo_rst),
-		.recording_fifo_din (recording_fifo_din),
-		.recording_fifo_wr (recording_fifo_wr),
-		.recording_fifo_full (recording_fifo_full),
 
 		.IRQ (IRQ)
 	);
@@ -343,7 +301,7 @@ module nipcb_ahb_interpreter #(
 	localparam integer TRIG_COUNT = 1,
 	localparam integer FLAG_COUNT = 1,
 	localparam integer CONF_COUNT = 1,
-	localparam integer IREG_COUNT = 11,
+	localparam integer IREG_COUNT = 8,
 	localparam integer OREG_COUNT = 1,
 	localparam integer DATA_BYTES = DATA_WIDTH / 8,
 	localparam integer REGS_COUNT = TRIG_COUNT + FLAG_COUNT + CONF_COUNT + IREG_COUNT + OREG_COUNT,
@@ -377,9 +335,8 @@ module nipcb_ahb_interpreter #(
 	input wire [DATA_WIDTH - 1:0] MDOUT
 );
 
-	`define AHB_RSP_OKAY 1'b0"
-
-	`define AHB_RSP_ERROR 1'b1"
+  `define AHB_RSP_OKAY  1'b0
+  `define AHB_RSP_ERROR 1'b1
 
 	// Bus Registers
 	reg [ADDR_WIDTH - 1:0] haddr;
@@ -526,7 +483,7 @@ module nipcb_ahb #(
 	localparam integer TRIG_COUNT = 1,
 	localparam integer FLAG_COUNT = 1,
 	localparam integer CONF_COUNT = 1,
-	localparam integer IREG_COUNT = 11,
+	localparam integer IREG_COUNT = 8,
 	localparam integer OREG_COUNT = 1,
 	localparam integer DATA_BYTES = DATA_WIDTH / 8,
 	localparam integer REGS_COUNT = TRIG_COUNT + FLAG_COUNT + CONF_COUNT + IREG_COUNT + OREG_COUNT,
@@ -559,11 +516,6 @@ module nipcb_ahb #(
 	output	[2:0]	ni_pga_gain,
 	output	[3:0]	ni_sel_ch,
 	output	[3:0]	ni_en_ch,
-	output	[0:0]	recording_fifo_clk,
-	output	[0:0]	recording_fifo_rst,
-	output	[31:0]	recording_fifo_din,
-	output	[0:0]	recording_fifo_wr,
-	input	[0:0]	recording_fifo_full,
 
 	// IRQ
 	output		IRQ
@@ -644,11 +596,6 @@ module nipcb_ahb #(
 		.ni_pga_gain (ni_pga_gain),
 		.ni_sel_ch (ni_sel_ch),
 		.ni_en_ch (ni_en_ch),
-		.recording_fifo_clk (recording_fifo_clk),
-		.recording_fifo_rst (recording_fifo_rst),
-		.recording_fifo_din (recording_fifo_din),
-		.recording_fifo_wr (recording_fifo_wr),
-		.recording_fifo_full (recording_fifo_full),
 
 		.IRQ (IRQ)
 	);
