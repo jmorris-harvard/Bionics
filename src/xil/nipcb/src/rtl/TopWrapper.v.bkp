@@ -23,14 +23,6 @@ module TopWrapper (
     output wire [3:0] nipcb_0_ni_sel_ch,
     output wire [3:0] nipcb_0_ni_en_ch,
 
-    output wire nipcb_1_ni_csn_hp_dac,
-    output wire nipcb_1_ni_csn_adc,
-    inout wire nipcb_1_ni_sdio,
-    output wire nipcb_1_ni_sclk,
-    output wire [2:0] nipcb_1_ni_pga_gain,
-    output wire [3:0] nipcb_1_ni_sel_ch,
-    output wire [3:0] nipcb_1_ni_en_ch,
-
     // led
     output wire [7:0]    led
 );
@@ -63,9 +55,6 @@ wire        pipe_in_80_write;
 // ---- Outs
 wire [31:0] pipe_out_a0_data;
 wire        pipe_out_a0_read;
-
-wire [31:0] pipe_out_a1_data;
-wire        pipe_out_a1_read;
 
 // --- Globals
 wire        core_clk;
@@ -125,16 +114,6 @@ wire nipcb_0_recording_fifo_full;
 wire nipcb_0_recording_fifo_empty;
 wire nipcb_0_recording_fifo_rd;
 
-// -- nipcb 1 fifo signals
-wire nipcb_1_recording_fifo_clk;
-wire nipcb_1_recording_fifo_rst;
-wire [31:0] nipcb_1_recording_fifo_din;
-wire [31:0] nipcb_1_recording_fifo_dout;
-wire nipcb_1_recording_fifo_wr;
-wire nipcb_1_recording_fifo_full;
-wire nipcb_1_recording_fifo_empty;
-wire nipcb_1_recording_fifo_rd;
-
 // logic
 // -- globals
 assign reset          = wire_in_00[0];
@@ -165,9 +144,6 @@ assign write_mem      = wire_in_00[2];
 // -- nipcb0 fifo
 assign nipcb_0_recording_fifo_rd = ~nipcb_0_recording_fifo_empty & pipe_out_a0_read;
 assign pipe_out_a0_data = (~nipcb_0_recording_fifo_empty) ? nipcb_0_recording_fifo_dout : 32'h0;
-
-assign nipcb_1_recording_fifo_rd = ~nipcb_1_recording_fifo_empty & pipe_out_a1_read;
-assign pipe_out_a1_data = (~nipcb_1_recording_fifo_empty) ? nipcb_1_recording_fifo_dout : 32'h0;
 
 // instantiations
 // -- sys clock
@@ -229,7 +205,7 @@ Top Top_inst (
   .sram_mwe (sram_mwe),
   .sram_mdout (sram_mdout),
 
-  // nipcb 0
+  // nipcb
   .nipcb_0_ni_csn_hp_dac (nipcb_0_ni_csn_hp_dac),
   .nipcb_0_ni_csn_adc (nipcb_0_ni_csn_adc),
   .nipcb_0_ni_sdio (nipcb_0_ni_sdio),
@@ -244,21 +220,6 @@ Top Top_inst (
 	.nipcb_0_recording_fifo_din (nipcb_0_recording_fifo_din),
 	.nipcb_0_recording_fifo_wr (nipcb_0_recording_fifo_wr),
 	.nipcb_0_recording_fifo_full (nipcb_0_recording_fifo_full),
-
-  // nipcb 1
-  .nipcb_1_ni_csn_hp_dac (nipcb_1_ni_csn_hp_dac),
-  .nipcb_1_ni_csn_adc (nipcb_1_ni_csn_adc),
-  .nipcb_1_ni_sdio (nipcb_1_ni_sdio),
-  .nipcb_1_ni_sclk (nipcb_1_ni_sclk),
-  .nipcb_1_ni_pga_gain (nipcb_1_ni_pga_gain),
-  .nipcb_1_ni_sel_ch (nipcb_1_ni_sel_ch),
-  .nipcb_1_ni_en_ch (nipcb_1_ni_en_ch),
-
-	.nipcb_1_recording_fifo_clk (nipcb_1_recording_fifo_clk),
-	.nipcb_1_recording_fifo_rst (nipcb_1_recording_fifo_rst),
-	.nipcb_1_recording_fifo_din (nipcb_1_recording_fifo_din),
-	.nipcb_1_recording_fifo_wr (nipcb_1_recording_fifo_wr),
-	.nipcb_1_recording_fifo_full (nipcb_1_recording_fifo_full),
 
   // led
   .led_0_led_gpio (led_0_led_gpio)
@@ -293,20 +254,6 @@ fifo pipe_out_a0_fifo (
   .rd_rst_busy ()
 );
 
-fifo pipe_out_a1_fifo (
-  .rst (nipcb_1_recording_fifo_rst),
-  .wr_clk (nipcb_1_recording_fifo_clk),
-  .rd_clk (okClk),
-  .din (nipcb_1_recording_fifo_din),
-  .wr_en (nipcb_1_recording_fifo_wr),
-  .rd_en (nipcb_1_recording_fifo_rd),
-  .dout (nipcb_1_recording_fifo_dout),
-  .full (nipcb_1_recording_fifo_full),
-  .empty (nipcb_1_recording_fifo_empty),
-  .wr_rst_busy (),
-  .rd_rst_busy ()
-);
-
 // state machines
 // -- programming
 always @(posedge core_clk) begin
@@ -322,7 +269,7 @@ always @(posedge core_clk) begin
 end 
 
 // OK Library
-localparam nEHx = 4;
+localparam nEHx = 3;
 wire [65*nEHx-1:0]  okEHx;
 okHost okHI(
 	.okUH(okUH),
@@ -347,6 +294,5 @@ okPipeIn     ep80 (.okHE(okHE), .okEH(okEHx[ 1*65 +: 65 ]), .ep_addr(8'h80), .ep
 
 // Pipe Outs -- 0xA0 - 0xBF
 okPipeOut    epA0 (.okHE(okHE), .okEH(okEHx[ 2*65 +: 65 ]), .ep_addr(8'hA0), .ep_read(pipe_out_a0_read),   .ep_datain(pipe_out_a0_data));
-okPipeOut    epA1 (.okHE(okHE), .okEH(okEHx[ 3*65 +: 65 ]), .ep_addr(8'hA1), .ep_read(pipe_out_a1_read),   .ep_datain(pipe_out_a1_data));
 
 endmodule

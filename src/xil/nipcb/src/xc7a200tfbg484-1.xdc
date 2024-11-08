@@ -420,26 +420,26 @@ set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_0_ni_sel_ch[0]}]
 # set_property IOSTANDARD  [get_ports {}]
 
 # MC2-15 
-# set_property PACKAGE_PIN P5 [get_ports {nipcb_1_ni_sclk}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_sclk}]
+set_property PACKAGE_PIN P5 [get_ports {nipcb_1_ni_sclk}]
+set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_sclk}]
 # MC2-16 
 #set_property PACKAGE_PIN P6 [get_ports {}]
 #set_property IOSTANDARD LVCMOS33 [get_ports {}]
 # MC2-17 
-# set_property PACKAGE_PIN P4 [get_ports {nipcb_1_ni_sdio}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_sdio}]
+set_property PACKAGE_PIN P4 [get_ports {nipcb_1_ni_sdio}]
+set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_sdio}]
 # MC2-18 
 #set_property PACKAGE_PIN N5 [get_ports {}]
 #set_property IOSTANDARD LVCMOS33 [get_ports {}]
 # MC2-19 
-# set_property PACKAGE_PIN N4 [get_ports {nipcb_1_ni_csn_adc}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_csn_adc}]
+set_property PACKAGE_PIN N4 [get_ports {nipcb_1_ni_csn_adc}]
+set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_csn_adc}]
 # MC2-20 
 #set_property PACKAGE_PIN P2 [get_ports {}]
 #set_property IOSTANDARD LVCMOS33 [get_ports {}]
 # MC2-21 
-# set_property PACKAGE_PIN N3 [get_ports {nipcb_1_ni_csn_hp_dac}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_csn_hp_dac}]
+set_property PACKAGE_PIN N3 [get_ports {nipcb_1_ni_csn_hp_dac}]
+set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_csn_hp_dac}]
 # MC2-22 
 #set_property PACKAGE_PIN N2 [get_ports {}]
 #set_property IOSTANDARD LVCMOS33 [get_ports {}]
@@ -450,20 +450,20 @@ set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_0_ni_sel_ch[0]}]
 #set_property PACKAGE_PIN R1 [get_ports {}]
 #set_property IOSTANDARD LVCMOS33 [get_ports {}]
 # MC2-25 
-# set_property PACKAGE_PIN L4 [get_ports {nipcb_1_ni_pga_gain[2]}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_pga_gain[2]}]
+set_property PACKAGE_PIN L4 [get_ports {nipcb_1_ni_pga_gain[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_pga_gain[2]}]
 # MC2-26 
 #set_property PACKAGE_PIN P1 [get_ports {}]
 #set_property IOSTANDARD LVCMOS33 [get_ports {}]
 # MC2-27 
-# set_property PACKAGE_PIN M6 [get_ports {nipcb_1_ni_pga_gain[0]}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_pga_gain[0]}]
+set_property PACKAGE_PIN M6 [get_ports {nipcb_1_ni_pga_gain[0]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_pga_gain[0]}]
 # MC2-28 
 #set_property PACKAGE_PIN M3 [get_ports {}]
 #set_property IOSTANDARD LVCMOS33 [get_ports {}]
 # MC2-29 
-# set_property PACKAGE_PIN M5 [get_ports {nipcb_1_ni_pga_gain[1]}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_pga_gain[1]}]
+set_property PACKAGE_PIN M5 [get_ports {nipcb_1_ni_pga_gain[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_pga_gain[1]}]
 # MC2-30 
 #set_property PACKAGE_PIN M2 [get_ports {}]
 #set_property IOSTANDARD LVCMOS33 [get_ports {}]
@@ -588,36 +588,36 @@ set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_0_ni_sel_ch[0]}]
 #set_property PACKAGE_PIN U16 [get_ports {}]
 #set_property IOSTANDARD LVCMOS33 [get_ports {}]
 # MC2-70 
-# set_property PACKAGE_PIN T15 [get_ports {nipcb_1_ni_sel_ch[3]}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_sel_ch[3]}]
+set_property PACKAGE_PIN T15 [get_ports {nipcb_1_ni_sel_ch[3]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_sel_ch[3]}]
 # MC2-71 
 #set_property PACKAGE_PIN V13 [get_ports {}]
 #set_property IOSTANDARD LVCMOS33 [get_ports {}]
 # MC2-72 
-# set_property PACKAGE_PIN W14 [get_ports {nipcb_1_ni_en_ch[3]}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_en_ch[3]}]
+set_property PACKAGE_PIN W14 [get_ports {nipcb_1_ni_en_ch[3]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_en_ch[3]}]
 # MC2-73 
-# set_property PACKAGE_PIN V14 [get_ports {nipcb_1_ni_sel_ch[2]}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_sel_ch[2]}]
+set_property PACKAGE_PIN V14 [get_ports {nipcb_1_ni_sel_ch[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_sel_ch[2]}]
 # MC2-74 
-# set_property PACKAGE_PIN Y14 [get_ports {nipcb_1_ni_en_ch[1]}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_en_ch[1]}]
+set_property PACKAGE_PIN Y14 [get_ports {nipcb_1_ni_en_ch[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_en_ch[1]}]
 # MC2-75 
-# set_property PACKAGE_PIN Y11 [get_ports {nipcb_1_ni_en_ch[2]}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_en_ch[2]}]
+set_property PACKAGE_PIN Y11 [get_ports {nipcb_1_ni_en_ch[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_en_ch[2]}]
 # MC2-76 
-# set_property PACKAGE_PIN Y12 [get_ports {nipcb_1_ni_sel_ch[1]}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_sel_ch[1]}]
+set_property PACKAGE_PIN Y12 [get_ports {nipcb_1_ni_sel_ch[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_sel_ch[1]}]
 # MC2-77 
-# set_property PACKAGE_PIN H4 [get_ports {nipcb_1_ni_en_ch[0]}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_en_ch[0]}]
+set_property PACKAGE_PIN H4 [get_ports {nipcb_1_ni_en_ch[0]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_en_ch[0]}]
 # MC2-78 
 # set_property PACKAGE_PIN  [get_ports {}]
 # set_property IOSTANDARD  [get_ports {}]
 
 # MC2-79 
-# set_property PACKAGE_PIN G4 [get_ports {nipcb_1_ni_sel_ch[0]}]
-# set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_sel_ch[0]}]
+set_property PACKAGE_PIN G4 [get_ports {nipcb_1_ni_sel_ch[0]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {nipcb_1_ni_sel_ch[0]}]
 # MC2-80 
 # set_property PACKAGE_PIN  [get_ports {}]
 # set_property IOSTANDARD  [get_ports {}]

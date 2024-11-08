@@ -6,29 +6,29 @@ module nipcb #(
 	input	RESETn,
 
 	// Triggers
-	input		[DATA_WIDTH - 1:0]		T_ni_t,
+	input		[DATA_WIDTH - 1:0]		T_ni_t, // 0x0
 
 	// Flags
-	output		[DATA_WIDTH - 1:0]		F_ni_f,
+	output		[DATA_WIDTH - 1:0]		F_ni_f, // 0x4
 
 	// Configurations
-	input		[DATA_WIDTH - 1:0]		C_ni_c,
+	input		[DATA_WIDTH - 1:0]		C_ni_c, // 0x8
 
 	// Input Registers
-	input		[DATA_WIDTH - 1:0]		I_stimulation_channel_select,
-	input		[DATA_WIDTH - 1:0]		I_stimulation_cycles_high,
-	input		[DATA_WIDTH - 1:0]		I_stimulation_cycles_low,
-	input		[DATA_WIDTH - 1:0]		I_stimulation_cycles_delay,
-	input		[DATA_WIDTH - 1:0]		I_stimulation_cycles_stall,
-	input		[DATA_WIDTH - 1:0]		I_stimulation_cycles_count,
-	input		[DATA_WIDTH - 1:0]		I_stimulation_magnitude_high,
-	input		[DATA_WIDTH - 1:0]		I_stimulation_magnitude_low,
-	input		[DATA_WIDTH - 1:0]		I_recording_channel_select,
-	input		[DATA_WIDTH - 1:0]		I_recording_cycles_stall,
-	input		[DATA_WIDTH - 1:0]		I_recording_pga_gain,
+	input		[DATA_WIDTH - 1:0]		I_stimulation_channel_select, // 0xC
+	input		[DATA_WIDTH - 1:0]		I_stimulation_cycles_high, // 0x10
+	input		[DATA_WIDTH - 1:0]		I_stimulation_cycles_low, // 0x14
+	input		[DATA_WIDTH - 1:0]		I_stimulation_cycles_delay, // 0x18
+	input		[DATA_WIDTH - 1:0]		I_stimulation_cycles_stall, // 0x1C
+	input		[DATA_WIDTH - 1:0]		I_stimulation_cycles_count, // 0x20
+	input		[DATA_WIDTH - 1:0]		I_stimulation_magnitude_high, // 0x24
+	input		[DATA_WIDTH - 1:0]		I_stimulation_magnitude_low, // 0x28
+	input		[DATA_WIDTH - 1:0]		I_recording_channel_select, // 0x2C
+	input		[DATA_WIDTH - 1:0]		I_recording_cycles_stall, // 0x30
+	input		[DATA_WIDTH - 1:0]		I_recording_pga_gain, // 0x3C
 
 	// Output Registers
-	output		[DATA_WIDTH - 1:0]		O_output,
+	output		[DATA_WIDTH - 1:0]		O_output, // 0x40
 
 	// GPIO
 	output		[0:0]		ni_csn_hp_dac,
@@ -117,7 +117,7 @@ module nipcb #(
     .ni_sclk (ni_sclk),
     .ni_pga_gain (ni_pga_gain),
     .ni_sel_ch (ni_sel_ch),
-    .ni_en_ch (no_en_ch)
+    .ni_en_ch (ni_en_ch)
   );
 
 	// -- End Custom RTL --
@@ -377,9 +377,8 @@ module nipcb_ahb_interpreter #(
 	input wire [DATA_WIDTH - 1:0] MDOUT
 );
 
-	`define AHB_RSP_OKAY 1'b0"
-
-	`define AHB_RSP_ERROR 1'b1"
+	`define AHB_RSP_OKAY 1'b0
+	`define AHB_RSP_ERROR 1'b1
 
 	// Bus Registers
 	reg [ADDR_WIDTH - 1:0] haddr;

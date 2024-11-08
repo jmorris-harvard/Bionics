@@ -102,14 +102,13 @@ wire [31:0] recording_timer_dout;
 
 // --- about to swtch to another channel
 reg recording_pending;
+reg recording_switch_pending;
 
 // --- recording in progress
 reg recording_en;
 reg [1:0] recording_en_ch;
 
 wire recording_valid_ch;
-
-reg [2:0] recording_pga_gain;
 
 reg recording_running;
 
@@ -138,7 +137,7 @@ assign ni_stimulation_running = stimulation_running;
 
 // -- recording
 assign ni_recording_running = recording_running;
-assign ni_pga_gain = recording_pga_gain;
+assign ni_pga_gain = ni_recording_pga_gain;
 assign recording_valid_ch = ni_recording_channel_select[recording_en_ch];
 
 // --- fifo signals
@@ -228,6 +227,7 @@ always @(posedge clk) begin
     stimulation_cycles_counter <= 32'b1;
     
     stimulation_pending <= 1'b0;
+    stimulation_running <= 1'b0;
 
     stimulation_en_ch <= 2'b00;
 
@@ -237,6 +237,7 @@ always @(posedge clk) begin
       // reset
       s0_00: begin
         stimulation_en <= 1'b0;
+        stimulation_running <= 1'b0;
         stimulation_timer_trigger <= 1'b0;
         stimulation_step <= 3'b0;
 
@@ -256,6 +257,7 @@ always @(posedge clk) begin
       // idle
       s0_01: begin
         stimulation_en <= 1'b0;
+        stimulation_running <= 1'b0;
         stimulation_timer_trigger <= 1'b0;
         stimulation_send <= 1'b0;
         stimulation_step <= 3'b0;
@@ -384,7 +386,7 @@ always @(posedge clk) begin
 end
 
 // -- recording
-reg [7:0] s1;
+reg [1:0] s1;
 localparam s1_00 = 2'b00;
 localparam s1_01 = 2'b01;
 localparam s1_10 = 2'b10;
@@ -398,12 +400,13 @@ always @(posedge clk) begin
     recording_timer_trigger <= 1'b0;
     recording_en_ch <= 2'b00;
     recording_switch_pending <= 1'b0;
+    recording_running <= 1'b0;
 
     s1 <= s1_00;
   end else begin
     case (s1)
 
-    s1_01: begin
+    s1_00: begin
       // reset
       recording_en <= 1'b0;
       recording_fifo_wr <= 1'b0;
@@ -412,6 +415,7 @@ always @(posedge clk) begin
       recording_timer_trigger <= 1'b0;
       recording_recv <= 1'b0;
       recording_switch_pending <= 1'b0;
+      recording_running <= 1'b0;
       
       if ( recording_timer_running ) begin
         recording_timer_trigger <= 1'b1;
@@ -429,6 +433,7 @@ always @(posedge clk) begin
       recording_timer_trigger <= 1'b0;
       recording_recv <= 1'b0;
       recording_switch_pending <= 1'b0;
+      recording_running <= 1'b0;
 
       // start recording on trigger
       if ( ni_recording_trigger ) begin
@@ -445,6 +450,7 @@ always @(posedge clk) begin
       recording_timer_trigger <= 1'b0;
       recording_switch_pending <= 1'b0;
       recording_recv <= 1'b0;
+      recording_running <= 1'b0;
 
       if ( recording_timer_running
          & ~recording_timer_trigger ) begin
@@ -467,6 +473,7 @@ always @(posedge clk) begin
       recording_timer_trigger <= 1'b0;
       recording_fifo_wr <= 1'b0;
       recording_recv <= 1'b0;
+      recording_running <= 1'b1;
       
       // stall to settle input / allow signal propagation
       if ( ~recording_timer_running // timer not running
@@ -476,7 +483,7 @@ always @(posedge clk) begin
          & ~recording_timer_trigger // have not enable timer
          ) begin
         // start timer
-        recording_timer_tigger <= 1'b1;
+        recording_timer_trigger <= 1'b1;
         recording_timer_din <= ni_recording_cycles_stall;
         // open channel
         recording_en <= 1'b1;
@@ -491,7 +498,7 @@ always @(posedge clk) begin
       end
 
       // record
-      if ( recording_pending <= 1'b1 // time to record
+      if ( recording_pending // time to record
          & spi_ready // spi idle can recv
          & ~recording_recv // did not send to recv yet
          & ~stimulation_pending // stimulation is not running
@@ -512,7 +519,7 @@ always @(posedge clk) begin
          & ~recording_recv // spi not about to receive
          ) begin
         // log data
-        recording_data[8 * (recording_en_ch) +: 8] <= recording_rdata[7:0];
+        recording_data[8 * (recording_en_ch) +: 8] <= recording_rdata[12:5];
         // send data on last channel
         if ( recording_en_ch == 2'b11 ) begin
           // write to fifo
@@ -530,8 +537,12 @@ always @(posedge clk) begin
         recording_data[8 * (recording_en_ch) +: 8] <= 8'h00;
         // move to next channel
         recording_en_ch <= recording_en_ch + 2'b01;
+        // send data on last channel
+        if ( recording_en_ch == 2'b11 ) begin
+          // write to fifo
+          recording_fifo_wr <= 1'b1;
+        end
       end
-
 
       // pause recording when stimulation starts
       if ( stimulation_pending // stim cycle is about to start

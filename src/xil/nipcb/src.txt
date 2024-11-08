@@ -1,12 +1,12 @@
 rtl/peripherals/led_ahb.sv
 rtl/peripherals/ahb_interconnect.v
 rtl/peripherals/ahb_interconnect_master.sv
-rtl/peripherals/nipcb.v
-rtl/peripherals/nipcb_ahb.sv
 rtl/peripherals/ahb_defs.v
 rtl/peripherals/mem_ahb_interpreter.sv
 rtl/peripherals/timer.v
 rtl/peripherals/spi.v
+rtl/peripherals/nipcb_ahb.sv
+rtl/peripherals/nipcb.v
 rtl/core/cm0_top_dbg.v
 rtl/core/cm0_top_clk.v
 rtl/core/cm0_rst_send_set.v

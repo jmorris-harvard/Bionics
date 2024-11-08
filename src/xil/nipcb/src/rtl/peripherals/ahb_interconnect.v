@@ -7,7 +7,7 @@ module ahb_interconnect
 	parameter IDLE_BASEADDR = 32'hE000_0000,
 	parameter IDLE_SIZE = 32'h2000_0000,
 
-	parameter MASTERS_COUNT = 4,
+	parameter MASTERS_COUNT = 5,
 
 	parameter M0_PASSTHROUGH = 0,
 	parameter M0_BASEADDR = 32'h0000_0000,
@@ -23,7 +23,11 @@ module ahb_interconnect
 
 	parameter M3_PASSTHROUGH = 0,
 	parameter M3_BASEADDR = 32'h0000_0000,
-	parameter M3_SIZE = 32'h0010_0000
+	parameter M3_SIZE = 32'h0010_0000,
+
+	parameter M4_PASSTHROUGH = 0,
+	parameter M4_BASEADDR = 32'h0000_0000,
+	parameter M4_SIZE = 32'h0010_0000
 )
 (
 	// COMMON
@@ -106,7 +110,22 @@ module ahb_interconnect
 
 	input  wire        M3_HREADY,
 	input  wire        M3_HRESP,
-	input  wire [DATA_WIDTH-1:0]  M3_HRDATA
+	input  wire [DATA_WIDTH-1:0]  M3_HRDATA,
+
+	// -- #4
+	output wire        M4_HSEL,
+	output wire [ADDR_WIDTH-1:0]  M4_HADDR,
+	output wire        M4_HWRITE,
+	output wire [2:0]  M4_HSIZE,
+	output wire [2:0]  M4_HBURST,
+	output wire [3:0]  M4_HPROT,
+	output wire [1:0]  M4_HTRANS,
+	output wire        M4_HMASTLOCK,
+	output wire [DATA_WIDTH-1:0]  M4_HWDATA,
+
+	input  wire        M4_HREADY,
+	input  wire        M4_HRESP,
+	input  wire [DATA_WIDTH-1:0]  M4_HRDATA
 );
 
 
@@ -118,7 +137,8 @@ module ahb_interconnect
 	localparam M_PASSTHROUGH = ( MASTERS_COUNT > 0 ? M0_PASSTHROUGH : 0 )
 	                        || ( MASTERS_COUNT > 1 ? M1_PASSTHROUGH : 0 )
 	                        || ( MASTERS_COUNT > 2 ? M2_PASSTHROUGH : 0 )
-	                        || ( MASTERS_COUNT > 3 ? M3_PASSTHROUGH : 0 );
+	                        || ( MASTERS_COUNT > 3 ? M3_PASSTHROUGH : 0 )
+	                        || ( MASTERS_COUNT > 4 ? M4_PASSTHROUGH : 0 );
 	localparam IDLE_HEAD = $clog2(IDLE_SIZE);
 
 
@@ -171,6 +191,13 @@ module ahb_interconnect
 	wire        m3_hresp_en;
 	wire [DATA_WIDTH-1:0]  m3_hrdata;
 	wire        m3_hrdata_en;
+	// ---- #4
+	wire        m4_hready;
+	wire        m4_hready_en;
+	wire        m4_hresp;
+	wire        m4_hresp_en;
+	wire [DATA_WIDTH-1:0]  m4_hrdata;
+	wire        m4_hrdata_en;
 
 
 	// ROUTING
@@ -193,18 +220,21 @@ module ahb_interconnect
 	             : m1_hresp_en ? M1_HRESP
 	             : m2_hresp_en ? M2_HRESP
 	             : m3_hresp_en ? M3_HRESP
+	             : m4_hresp_en ? M4_HRESP
 	             : (!M_PASSTHROUGH & !_idle & !_debugger && _trans) ? `AHB_RSP_ERROR
 	             : `AHB_RSP_OKAY;
 	assign hready = m0_hready_en ? M0_HREADY
 	              : m1_hready_en ? M1_HREADY
 	              : m2_hready_en ? M2_HREADY
 	              : m3_hready_en ? M3_HREADY
+	              : m4_hready_en ? M4_HREADY
 	              : (!M_PASSTHROUGH & !_idle & !_debugger && _trans) ? 1'b0
 	              : 1'b1;
 	assign hrdata = m0_hrdata_en ? M0_HRDATA
 	              : m1_hrdata_en ? M1_HRDATA
 	              : m2_hrdata_en ? M2_HRDATA
 	              : m3_hrdata_en ? M3_HRDATA
+	              : m4_hrdata_en ? M4_HRDATA
 				  : {DATA_WIDTH{1'bZ}};
 
 
@@ -428,6 +458,57 @@ module ahb_interconnect
 			assign m3_hready_en = 0;
 			assign m3_hresp_en = 0;
 			assign m3_hrdata_en = 0;
+		end
+	endgenerate
+	generate
+		if ( MASTERS_COUNT > 4 ) begin
+			ahb_interconnect_master #(
+				.DATA_WIDTH (DATA_WIDTH),
+				.ADDR_WIDTH (ADDR_WIDTH),
+				.PASSTHROUGH(M4_PASSTHROUGH),
+				.BASEADDR   (M4_BASEADDR),
+				.SIZE       (M4_SIZE)
+			) M4 (
+				.HCLK   (HCLK),
+				.HRESETn(HRESETn),
+
+				.S_HADDR    (haddr),
+				.S_HBURST   (hburst),
+				.S_HMASTLOCK(hmastlock),
+				.S_HPROT    (hprot),
+				.S_HSIZE    (hsize),
+				.S_HTRANS   (htrans),
+				.S_HWDATA   (hwdata),
+				.S_HWRITE   (hwrite),
+				.S_HSEL     (hsel),
+
+				.S_HRDATA(m4_hrdata),
+				.S_HREADY(m4_hready),
+				.S_HRESP (m4_hresp),
+
+				.M_HADDR    (M4_HADDR),
+				.M_HBURST   (M4_HBURST),
+				.M_HMASTLOCK(M4_HMASTLOCK),
+				.M_HPROT    (M4_HPROT),
+				.M_HSIZE    (M4_HSIZE),
+				.M_HTRANS   (M4_HTRANS),
+				.M_HWDATA   (M4_HWDATA),
+				.M_HWRITE   (M4_HWRITE),
+				.M_HSEL     (M4_HSEL),
+
+				.M_HRDATA(M4_HRDATA),
+				.M_HREADY(M4_HREADY),
+				.M_HRESP (M4_HRESP),
+
+				.M_HREADYen(m4_hready_en),
+				.M_HRESPen (m4_hresp_en),
+				.M_HRDATAen(m4_hrdata_en)
+			);
+		end
+		else begin
+			assign m4_hready_en = 0;
+			assign m4_hresp_en = 0;
+			assign m4_hrdata_en = 0;
 		end
 	endgenerate
 

@@ -23,7 +23,6 @@ all:
 
 preprocessing: clean synthIpFile readIpFile srcFile 
 	@mkdir -p $(TEMPDIR) # Make Directory For Temporary Files
-	@cp $(MASTERSCRIPTDIR)/* ./scripts
 
 srcFile:
 	@find $(SRCDIR) -name "*.v" -o -name "*.sv" | grep "" | sed "s/.\/src\///g" > src.txt
@@ -38,7 +37,7 @@ simFile:
 	@find ./sim -name "*.v" -o -name "*.sv" | grep "" > sim.txt
 	@find ./src \( -name "*.v" -o -name "*.sv" \) -not -name "*$(TOP)*" -not -name "ok*.v" | grep "" >> sim.txt
 	
-sim: simFile
+sim: preprocessing simFile
 	@vcs -full64 \
 			-sverilog \
 			-f "sim.txt" \
@@ -79,4 +78,4 @@ createProj: genIp
 						-tclargs $(PROJECT)_$(PART) $(PART)
 
 clean:
-	rm -rf $(BUILDDIR) $(TEMPDIR) .Xil/
+	rm -rf $(TEMPDIR) $(BUILDDIR) .Xil/

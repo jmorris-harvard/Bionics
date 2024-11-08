@@ -489,8 +489,8 @@ class AHBPeripheral:
     Output.append ('\n')
 
     # Include AHB Defines
-    Output.append ('\t`define AHB_RSP_OKAY 1\'b0"\n\n')
-    Output.append ('\t`define AHB_RSP_ERROR 1\'b1"\n\n')
+    Output.append ('\t`define AHB_RSP_OKAY 1\'b0\n\n')
+    Output.append ('\t`define AHB_RSP_ERROR 1\'b1\n\n')
 
     # Signals
     # -- IO Registers
