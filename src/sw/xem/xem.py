@@ -92,7 +92,6 @@ class Device:
 		else:
 			extra = self.pipeSize () - (len(buffer) % self.pipeSize())
 		buffer += bytearray(extra) #Make buffer multiple of data-width (in bytes)
-		print (len(buffer))
 		self.xem.WriteToPipeIn(id, buffer)
 	
 	def writeString(self, id, text):

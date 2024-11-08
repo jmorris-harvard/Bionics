@@ -1,8 +1,11 @@
 #!/usr/bin/python3.8
 
-import xem.xem as xem
+import argparse
+import os
+import re
 import sys
 import time
+import xem.xem as xem
 
 class ConfigBits:
 	IDLE = 0x0
@@ -40,12 +43,32 @@ def memToByteArray (filename):
 			buf = byte_array
 		else:
 			buf += byte_array
-	buf += bytearray ([0x00])
-	buf += bytearray ([0x00])
-	buf += bytearray ([0x00])
-	print (len(buf))
 	return buf
-	
+
+def recv (dev):
+	filename = 'out.csv'
+	rounds = 100
+	length = 256 # read 256 samples at a time
+	time.sleep (0.25)
+	channels = [
+		bytearray (0),
+		bytearray (0),
+		bytearray (0),
+		bytearray (0)
+	]
+	try:
+		while rounds:
+			data = dev.readBuffer (0xa0, length)
+			channels[0] += data[0::4]
+			channels[1] += data[1::4]
+			channels[2] += data[2::4]
+			channels[3] += data[3::4]
+			rounds = rounds - 1
+	finally:
+		with open (filename, 'w') as csv:
+			for cdata in zip (*channels):
+				row = ','.join ([str(int(c)) for c in cdata])
+				csv.write (row + '\n')
 
 def doWriteProgramMemory (dev, filename):
 	dev.setWire (0x00, ConfigBits.IDLE)
@@ -55,12 +78,49 @@ def doWriteProgramMemory (dev, filename):
 	dev.writeBuffer (0x80, buf)
 	dev.setWire (0x00, ConfigBits.IDLE)
 
-if __name__ == '__main__':
+def main ():
+	# get available programs
+	pattern = r'\w+\.mem'
+	files = os.listdir ('./mems')
+	commands = [os.path.splitext (f)[0] for f in files if re.match (pattern, f)]
+	callback_map = {}
+	for command in commands:
+		if command in globals () and callable (globals()[command]):
+			callback_map[command] = globals()[command]
+		else:
+			callback_map[command] = None
+
+	# parse arguments
+	parser = argparse.ArgumentParser (
+		prog = 'nipcb ctrl',
+		description = 'nipcb ctrl',
+		epilog = ''
+	)
+	parser.add_argument (
+		'command',
+		help = 'valid commands: ' + ' '.join (commands)
+	)
+	parser.add_argument (
+		'-v',
+		'--verbose',
+		action = 'store_true',
+		default = False)
+	args = parser.parse_args ()
+	if args.command not in commands:
+		print ('invalid command given')
+		sys.exit ()
+
 	dev = startUp ()
-	print (dev.checkFrontPanel ())
+	# reset
 	dev.setWire (0x00, 0x1)
 	time.sleep (0.25)
 	dev.setWire (0x00, 0x0)
 	time.sleep (0.25)
-	doWriteProgramMemory (dev, 'nipcb.mem')
 
+	# run command
+	doWriteProgramMemory (dev, os.path.join ('mems/', args.command + '.mem'))
+	if callback_map[args.command]:
+		callback_map[args.command] (dev)
+
+if __name__ == '__main__':
+	main ()
