@@ -5,6 +5,8 @@ import os
 import re
 import sys
 import time
+
+import callbacks
 import xem.xem as xem
 
 class ConfigBits:
@@ -13,14 +15,15 @@ class ConfigBits:
 	PROGRAM = 0x2
 	WRITE_PROG = 0x4
 
-def startUp (filename = './nipcb.bit'):
+def startUp (filename):
 	dev = xem.Device ()
 	if not dev.Initialize ():
 		print ('Could not connect to device')
 		sys.exit (1)
-	if not dev.downloadFile (filename):
-		print ('Could not download bitstream')
-		sys.exit (1)
+	if filename is not None:
+		if not dev.downloadFile (filename):
+			print ('Could not download bitstream')
+			sys.exit (1)
 	return dev
 
 def doReadProgramMemory (dev, size):
@@ -45,31 +48,6 @@ def memToByteArray (filename):
 			buf += byte_array
 	return buf
 
-def recv (dev):
-	filename = 'out.csv'
-	rounds = 100
-	length = 256 # read 256 samples at a time
-	time.sleep (0.25)
-	channels = [
-		bytearray (0),
-		bytearray (0),
-		bytearray (0),
-		bytearray (0)
-	]
-	try:
-		while rounds:
-			data = dev.readBuffer (0xa0, length)
-			channels[0] += data[0::4]
-			channels[1] += data[1::4]
-			channels[2] += data[2::4]
-			channels[3] += data[3::4]
-			rounds = rounds - 1
-	finally:
-		with open (filename, 'w') as csv:
-			for cdata in zip (*channels):
-				row = ','.join ([str(int(c)) for c in cdata])
-				csv.write (row + '\n')
-
 def doWriteProgramMemory (dev, filename):
 	dev.setWire (0x00, ConfigBits.IDLE)
 	dev.setWire (0x00, ConfigBits.WRITE_PROG)
@@ -82,11 +60,13 @@ def main ():
 	# get available programs
 	pattern = r'\w+\.mem'
 	files = os.listdir ('./mems')
+	sys.exit (1)
+
 	commands = [os.path.splitext (f)[0] for f in files if re.match (pattern, f)]
 	callback_map = {}
 	for command in commands:
-		if command in globals () and callable (globals()[command]):
-			callback_map[command] = globals()[command]
+		if command in dir (callbacks) and callable (getattr (getattr (callbacks, 'recv'), 'recv')):
+			callback_map[command] = getattr (getattr (callbacks, 'recv'), 'recv')
 		else:
 			callback_map[command] = None
 
@@ -94,23 +74,26 @@ def main ():
 	parser = argparse.ArgumentParser (
 		prog = 'nipcb ctrl',
 		description = 'nipcb ctrl',
-		epilog = ''
-	)
+		epilog = '')
 	parser.add_argument (
 		'command',
-		help = 'valid commands: ' + ' '.join (commands)
-	)
+		help = 'valid commands: ' + ' '.join (commands))
 	parser.add_argument (
 		'-v',
 		'--verbose',
 		action = 'store_true',
 		default = False)
+	parser.add_argument (
+		'-b',
+		'--bitfile',
+		default = None)
 	args = parser.parse_args ()
 	if args.command not in commands:
 		print ('invalid command given')
 		sys.exit ()
 
-	dev = startUp ()
+	dev = startUp (args.bitfile)
+
 	# reset
 	dev.setWire (0x00, 0x1)
 	time.sleep (0.25)
