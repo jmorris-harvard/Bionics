@@ -7,12 +7,6 @@
         "bits": [
           {
             "name": "stimulation_trigger"
-          },
-          {
-            "name": "recording_trigger"
-          },
-          {
-            "name": "recording_clear_fifo"
           }
         ]
       }
@@ -23,9 +17,6 @@
         "bits": [
           {
             "name": "stimulation_running"
-          },
-          {
-            "name": "recording_running"
           }
         ]
       }
@@ -64,15 +55,6 @@
       },
       {
         "name": "stimulation_magnitude_low"
-      },
-      {
-        "name": "recording_channel_select"
-      },
-      {
-        "name": "recording_cycles_stall"
-      },
-      {
-        "name": "recording_pga_gain"
       }
     ],
     "oregs": [
@@ -115,31 +97,6 @@
         "name": "ni_en_ch",
         "direction": "output",
         "bitwidth": 4
-      },
-      {
-        "name": "recording_fifo_clk",
-        "direction": "output",
-        "bitwidth": 1
-      },
-      {
-        "name": "recording_fifo_rst",
-        "direction": "output",
-        "bitwidth": 1
-      },
-      {
-        "name": "recording_fifo_din",
-        "direction": "output",
-        "bitwidth": 32
-      },
-      {
-        "name": "recording_fifo_wr",
-        "direction": "output",
-        "bitwidth": 1
-      },
-      {
-        "name": "recording_fifo_full",
-        "direction": "input",
-        "bitwidth": 1
       }
     ],
     "irq": true

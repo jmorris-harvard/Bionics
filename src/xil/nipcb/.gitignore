@@ -1,1 +1,2 @@
 src/rtl/core/*.v
+src/rtl/ok/

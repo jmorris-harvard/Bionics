@@ -46,20 +46,7 @@ module Top (
 	output [0:0] nipcb_0_recording_fifo_wr,
 	input [0:0] nipcb_0_recording_fifo_full,
 
-	output [7:0] led_0_led_gpio,
-
-	output [0:0] nipcb_1_ni_csn_hp_dac,
-	output [0:0] nipcb_1_ni_csn_adc,
-	inout [0:0] nipcb_1_ni_sdio,
-	output [0:0] nipcb_1_ni_sclk,
-	output [2:0] nipcb_1_ni_pga_gain,
-	output [3:0] nipcb_1_ni_sel_ch,
-	output [3:0] nipcb_1_ni_en_ch,
-	output [0:0] nipcb_1_recording_fifo_clk,
-	output [0:0] nipcb_1_recording_fifo_rst,
-	output [31:0] nipcb_1_recording_fifo_din,
-	output [0:0] nipcb_1_recording_fifo_wr,
-	input [0:0] nipcb_1_recording_fifo_full
+	output [7:0] led_0_led_gpio
 );
 
 	// Signals
@@ -149,29 +136,11 @@ module Top (
 	wire [31:0] led_0_hrdata;
 	wire led_0_hresp;
 
-	// -- nipcb_1
-	wire nipcb_1_hclk;
-	wire nipcb_1_hresetn;
-	wire [31:0] nipcb_1_haddr;
-	wire [2:0] nipcb_1_hburst;
-	wire nipcb_1_hmastlock;
-	wire [3:0] nipcb_1_hprot;
-	wire [2:0] nipcb_1_hsize;
-	wire [1:0] nipcb_1_htrans;
-	wire [31:0] nipcb_1_hwdata;
-	wire nipcb_1_hwrite;
-	wire nipcb_1_hsel;
-	wire nipcb_1_hready;
-	wire [31:0] nipcb_1_hrdata;
-	wire nipcb_1_hresp;
-	wire nipcb_1_irq;
-
 	// Routing
 	// -- Core
 	assign mcu_clk = CLK;
 	assign mcu_irq[0] = nipcb_0_irq;
-	assign mcu_irq[1] = nipcb_1_irq;
-	assign mcu_irq[31:2] = {(30){1'b0}};
+	assign mcu_irq[31:1] = {(31){1'b0}};
 
 	// -- flash
 	assign flash_hclk = mcu_clk;
@@ -192,11 +161,6 @@ module Top (
 	assign led_0_hclk = mcu_clk;
 	assign led_0_hresetn = mcu_hresetn;
 	assign led_0_hmastlock = 1'b0;
-
-	// -- nipcb_1
-	assign nipcb_1_hclk = mcu_clk;
-	assign nipcb_1_hresetn = mcu_hresetn;
-	assign nipcb_1_hmastlock = 1'b0;
 
 	// Instantiations
 	// -- Core
@@ -269,11 +233,7 @@ module Top (
 
 		.M3_PASSTHROUGH (0),
 		.M3_BASEADDR (32'h4000_1000),
-		.M3_SIZE (32'h0000_1000),
-
-		.M4_PASSTHROUGH (0),
-		.M4_BASEADDR (32'h4000_2000),
-		.M4_SIZE (32'h0000_1000)
+		.M3_SIZE (32'h0000_1000)
 	) u_interconnect (
 		.HCLK (mcu_clk),
 		.HRESETn (mcu_hresetn),
@@ -341,20 +301,7 @@ module Top (
 		.M3_HWDATA (led_0_hwdata),
 		.M3_HREADY (led_0_hready),
 		.M3_HRESP (led_0_hresp),
-		.M3_HRDATA (led_0_hrdata),
-
-		.M4_HSEL (nipcb_1_hsel),
-		.M4_HADDR (nipcb_1_haddr),
-		.M4_HWRITE (nipcb_1_hwrite),
-		.M4_HSIZE (nipcb_1_hsize),
-		.M4_HBURST (nipcb_1_hburst),
-		.M4_HPROT (nipcb_1_hprot),
-		.M4_HTRANS (nipcb_1_htrans),
-		.M4_HMASTLOCK (nipcb_1_hmastlock),
-		.M4_HWDATA (nipcb_1_hwdata),
-		.M4_HREADY (nipcb_1_hready),
-		.M4_HRESP (nipcb_1_hresp),
-		.M4_HRDATA (nipcb_1_hrdata)
+		.M3_HRDATA (led_0_hrdata)
 	);
 
 	mem_ahb_interpreter #(
@@ -475,40 +422,6 @@ module Top (
 		.HREADYOUT (led_0_hready),
 		.HRESP (led_0_hresp),
 		.led_gpio (led_0_led_gpio)
-	);
-
-	nipcb_ahb #(
-		.DATA_WIDTH (32)
-	) nipcb_1_inst (
-		.HCLK (nipcb_1_hclk),
-		.HRESETn (nipcb_1_hresetn),
-
-		.HADDR (nipcb_1_haddr),
-		.HBURST (nipcb_1_hburst),
-		.HPROT (nipcb_1_hprot),
-		.HSIZE (nipcb_1_hsize),
-		.HTRANS (nipcb_1_htrans),
-		.HMASTLOCK (nipcb_1_hmastlock),
-		.HWDATA (nipcb_1_hwdata),
-		.HWRITE (nipcb_1_hwrite),
-		.HSEL (nipcb_1_hsel),
-		.HREADYIN (nipcb_1_hready),
-		.HRDATA (nipcb_1_hrdata),
-		.HREADYOUT (nipcb_1_hready),
-		.HRESP (nipcb_1_hresp),
-		.ni_csn_hp_dac (nipcb_1_ni_csn_hp_dac),
-		.ni_csn_adc (nipcb_1_ni_csn_adc),
-		.ni_sdio (nipcb_1_ni_sdio),
-		.ni_sclk (nipcb_1_ni_sclk),
-		.ni_pga_gain (nipcb_1_ni_pga_gain),
-		.ni_sel_ch (nipcb_1_ni_sel_ch),
-		.ni_en_ch (nipcb_1_ni_en_ch),
-		.recording_fifo_clk (nipcb_1_recording_fifo_clk),
-		.recording_fifo_rst (nipcb_1_recording_fifo_rst),
-		.recording_fifo_din (nipcb_1_recording_fifo_din),
-		.recording_fifo_wr (nipcb_1_recording_fifo_wr),
-		.recording_fifo_full (nipcb_1_recording_fifo_full),
-		.IRQ (nipcb_1_irq)
 	);
 
 endmodule

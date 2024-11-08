@@ -1,9 +1,8 @@
 PROJECT:=nipcb
-PART:=xc7a100tcsg324-1
-TOP:=Top
+PART:=xc7a200tfbg484-1
+TOP:=TopWrapper
 # BOARD:=digilentinc.com:arty-a7-100:part0:1.0
 
-VIVADO:=vivado
 
 MASTERSCRIPTDIR:=../../scripts/tcl
 TEMPDIR:=./temp
@@ -14,6 +13,9 @@ SRCDIR:=./src
 
 LOGFILE:=$(TEMPDIR)/$(PROJECT)_$(PART).log
 
+VIVADO:=vivado
+VIVADOLOGFILE:=$(TEMPDIR)/$(PROJECT)_vivado.log
+
 VCS:=vcs
 VCSLOGFILE:=$(TEMPDIR)/$(PROJECT)_vcs.log
 
@@ -21,7 +23,6 @@ all:
 
 preprocessing: clean synthIpFile readIpFile srcFile 
 	@mkdir -p $(TEMPDIR) # Make Directory For Temporary Files
-	@cp $(MASTERSCRIPTDIR)/* ./scripts
 
 srcFile:
 	@find $(SRCDIR) -name "*.v" -o -name "*.sv" | grep "" | sed "s/.\/src\///g" > src.txt
@@ -34,9 +35,9 @@ readIpFile:
 
 simFile:
 	@find ./sim -name "*.v" -o -name "*.sv" | grep "" > sim.txt
-	@find ./src -name "*.v" -o -name "*.sv" | grep "" >> sim.txt
+	@find ./src \( -name "*.v" -o -name "*.sv" \) -not -name "*$(TOP)*" -not -name "ok*.v" | grep "" >> sim.txt
 	
-sim: simFile
+sim: preprocessing simFile
 	@vcs -full64 \
 			-sverilog \
 			-f "sim.txt" \
@@ -52,7 +53,7 @@ sim: simFile
 			+define+VCS \
 			+vcs+dumparrays+131072 \
 			+mda \
-	&> $(VCSLOGFILE)
+	| tee $(VCSLOGFILE)
 
 genIp: preprocessing
 	$(VIVADO) -nojournal \
@@ -66,7 +67,8 @@ synth: preprocessing
 						-log $(LOGFILE) \
 						-mode batch \
 						-source $(SCRIPTSDIR)/synth.tcl \
-						-tclargs $(PROJECT)_$(PART) $(PART) $(TOP)
+						-tclargs $(PROJECT)_$(PART) $(PART) $(TOP) \
+	| tee $(VIVADOLOGFILE)
 
 createProj: genIp
 	$(VIVADO) -nojournal \
@@ -76,4 +78,4 @@ createProj: genIp
 						-tclargs $(PROJECT)_$(PART) $(PART)
 
 clean:
-	rm -rf $(BUILDDIR) $(TEMPDIR) .Xil/
+	rm -rf $(TEMPDIR) $(BUILDDIR) .Xil/

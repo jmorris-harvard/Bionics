@@ -47,7 +47,9 @@ foreach s $synthIps {
   set localSynthIpObj [get_ips $moduleName]
   set localSynthIpFilename [get_property "IP_FILE" $localSynthIpObj]
   set localSynthIpFile [get_files $localSynthIpFilename]
-  set_property -dict $propertiesDict $localSynthIpObj
+  if {[llength $propertiesDict]} {
+    set_property -dict $propertiesDict $localSynthIpObj
+  }
   # Print Properties To File
   set propertiesFilename [file join $localSynthIpDir "$moduleName.prop"]
   set propertiesFile [open $propertiesFilename "w"]

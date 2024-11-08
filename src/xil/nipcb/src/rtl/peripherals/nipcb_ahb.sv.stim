@@ -1,66 +1,107 @@
-`timescale 1ns / 1ps
-module spi #(
+module nipcb #(
 	parameter integer DATA_WIDTH = 32
 ) (
 	input	CLK,
 	input	RESETn,
 
 	// Triggers
-	input		[DATA_WIDTH - 1:0]		T_T0,
+	input		[DATA_WIDTH - 1:0]		T_ni_t,
+
+	// Flags
+	output		[DATA_WIDTH - 1:0]		F_ni_f,
+
+	// Configurations
+	input		[DATA_WIDTH - 1:0]		C_ni_c,
 
 	// Input Registers
-	input		[DATA_WIDTH - 1:0]		I_tdata,
+	input		[DATA_WIDTH - 1:0]		I_stimulation_channel_select,
+	input		[DATA_WIDTH - 1:0]		I_stimulation_cycles_high,
+	input		[DATA_WIDTH - 1:0]		I_stimulation_cycles_low,
+	input		[DATA_WIDTH - 1:0]		I_stimulation_cycles_delay,
+	input		[DATA_WIDTH - 1:0]		I_stimulation_cycles_stall,
+	input		[DATA_WIDTH - 1:0]		I_stimulation_cycles_count,
+	input		[DATA_WIDTH - 1:0]		I_stimulation_magnitude_high,
+	input		[DATA_WIDTH - 1:0]		I_stimulation_magnitude_low,
 
 	// Output Registers
-	output		[DATA_WIDTH - 1:0]		O_rdata,
+	output		[DATA_WIDTH - 1:0]		O_output,
 
 	// GPIO
-	output		[0:0]		csn,
-	output		[0:0]		sclk,
-	inout		[0:0]		sdio
+	output		[0:0]		ni_csn_hp_dac,
+	output		[0:0]		ni_csn_adc,
+	inout		[0:0]		ni_sdio,
+	output		[0:0]		ni_sclk,
+	output		[2:0]		ni_pga_gain,
+	output		[3:0]		ni_sel_ch,
+	output		[3:0]		ni_en_ch,
+	// IRQ
+	output		IRQ
 );
 	// Routing
 	// -- Triggers
 	// ---- Bits
-	wire T_T0_b0_send;
-	assign T_T0_b0_send = T_T0[0];
-	wire T_T0_b1_recv;
-	assign T_T0_b1_recv = T_T0[1];
+	wire T_ni_t_b0_stimulation_trigger;
+	assign T_ni_t_b0_stimulation_trigger = T_ni_t[0];
+
+	// -- Flags
+	localparam integer F_ni_f_FLAG_BIT_N = 1;
+
+	// ---- Bits
+	wire F_ni_f_b0_stimulation_running;
+
+	// ---- Locations
+	assign F_ni_f[F_ni_f_FLAG_BIT_N - 1:0] = {F_ni_f_b0_stimulation_running};
+	assign F_ni_f[DATA_WIDTH - 1:F_ni_f_FLAG_BIT_N] = {(DATA_WIDTH - F_ni_f_FLAG_BIT_N - 1){1'b0}};
+
+	// -- Configurations
+	// ---- Bits
+	wire C_ni_c_b0_enable;
+	assign C_ni_c_b0_enable = C_ni_c[0];
 
 	// Custom Implementation
 
 	// -- Begin Custom RTL --
 
-  spi_core #(
-    .O_BW (16),
-    .I_BW (16),
-    .N_SLAVES (1)
-  ) spi_core_inst (
+  assign IRQ = 1'b0;
+
+  nipcb_core nipcb_core_inst (
     .clk (CLK),
     .rstn (RESETn),
 
-    .csn (csn),
-    .sclk (sclk),
-    .sdio (sdio),
+    .ni_stimulation_trigger (T_ni_t_b0_stimulation_trigger),
 
-    .odata (I_tdata),
-    .idata (O_rdata),
+    .ni_stimulation_channel_select (I_stimulation_channel_select[1:0]),
+    .ni_stimulation_cycles_high (I_stimulation_cycles_high),
+    .ni_stimulation_cycles_low (I_stimulation_cycles_low),
+    .ni_stimulation_cycles_delay (I_stimulation_cycles_delay),
+    .ni_stimulation_cycles_stall (I_stimulation_cycles_stall),
+    .ni_stimulation_cycles_count (I_stimulation_cycles_count),
 
-    .send (T_T0_b0_send),
-    .recv (T_T0_b1_recv)
+    .ni_stimulation_magnitude_high (I_stimulation_magnitude_high),
+    .ni_stimulation_magnitude_low (I_stimulation_magnitude_low),
+
+    .ni_stimulation_running (F_ni_f_b0_stimulation_running),
+    
+    .ni_csn_hp_dac (ni_csn_hp_dac),
+    .ni_csn_adc (ni_csn_adc),
+    .ni_sdio (ni_sdio),
+    .ni_sclk (ni_sclk),
+    .ni_pga_gain (ni_pga_gain),
+    .ni_sel_ch (ni_sel_ch),
+    .ni_en_ch (no_en_ch)
   );
 
 	// -- End Custom RTL --
 
 endmodule
 
-module spi_register_io #(
+module nipcb_register_io #(
 	parameter integer DATA_WIDTH = 32,
 
 	localparam integer TRIG_COUNT = 1,
-	localparam integer FLAG_COUNT = 0,
-	localparam integer CONF_COUNT = 0,
-	localparam integer IREG_COUNT = 1,
+	localparam integer FLAG_COUNT = 1,
+	localparam integer CONF_COUNT = 1,
+	localparam integer IREG_COUNT = 8,
 	localparam integer OREG_COUNT = 1,
 	localparam integer DATA_BYTES = DATA_WIDTH / 8,
 	localparam integer REGS_COUNT = TRIG_COUNT + FLAG_COUNT + CONF_COUNT + IREG_COUNT + OREG_COUNT,
@@ -80,9 +121,15 @@ module spi_register_io #(
 	output		RERROR,
 
 	// Peripheral Ports
-	output	[0:0]	csn,
-	output	[0:0]	sclk,
-	inout	[0:0]	sdio
+	output	[0:0]	ni_csn_hp_dac,
+	output	[0:0]	ni_csn_adc,
+	inout	[0:0]	ni_sdio,
+	output	[0:0]	ni_sclk,
+	output	[2:0]	ni_pga_gain,
+	output	[3:0]	ni_sel_ch,
+	output	[3:0]	ni_en_ch,
+	// IRQ
+	output		IRQ
 );
 
 	// Signals
@@ -95,6 +142,8 @@ module spi_register_io #(
 
 	// -- Register File
 	reg [DATA_WIDTH - 1:0] triggers	[0:TRIG_COUNT - 1];
+	reg [DATA_WIDTH - 1:0] flags	[0:FLAG_COUNT - 1];
+	reg [DATA_WIDTH - 1:0] configs	[0:CONF_COUNT - 1];
 	reg [DATA_WIDTH - 1:0] iregs	[0:IREG_COUNT - 1];
 	reg [DATA_WIDTH - 1:0] oregs	[0:OREG_COUNT - 1];
 
@@ -138,9 +187,9 @@ module spi_register_io #(
 				if ( RADDR < TRIG_COUNT ) begin
 					rdata <= triggers[RADDR];
 				end else if ( RADDR < TRIG_COUNT + FLAG_COUNT ) begin
-					// No Flags
+					rdata <= flags[RADDR - TRIG_COUNT];
 				end else if ( RADDR < TRIG_COUNT + FLAG_COUNT + CONF_COUNT ) begin
-					// No Configs
+					rdata <= configs[RADDR - TRIG_COUNT - FLAG_COUNT];
 				end else if ( RADDR < TRIG_COUNT + FLAG_COUNT + CONF_COUNT + IREG_COUNT ) begin
 					rdata <= iregs[RADDR - TRIG_COUNT - FLAG_COUNT - CONF_COUNT];
 				end else if ( RADDR < TRIG_COUNT + FLAG_COUNT + CONF_COUNT + IREG_COUNT + OREG_COUNT ) begin
@@ -181,6 +230,9 @@ module spi_register_io #(
 			for ( integer i = 0; i < TRIG_COUNT; i = i + 1 ) begin
 				triggers[i] = 0;
 			end
+			for ( integer i = 0; i < CONF_COUNT; i = i + 1 ) begin
+				configs[i] = 0;
+			end
 			for ( integer i = 0; i < IREG_COUNT; i = i + 1 ) begin
 				iregs[i] = 0;
 			end
@@ -194,7 +246,7 @@ module spi_register_io #(
 				end else if ( WADDR < TRIG_COUNT + FLAG_COUNT ) begin
 					// Illegal
 				end else if ( WADDR < TRIG_COUNT + FLAG_COUNT + CONF_COUNT ) begin
-					// No Configs
+					configs[RADDR - TRIG_COUNT - FLAG_COUNT] <= WDATA;
 				end else if ( WADDR < TRIG_COUNT + FLAG_COUNT + CONF_COUNT + IREG_COUNT ) begin
 					iregs[RADDR - TRIG_COUNT - FLAG_COUNT - CONF_COUNT] <= WDATA;
 				end else if ( WADDR < TRIG_COUNT + FLAG_COUNT + CONF_COUNT + IREG_COUNT + OREG_COUNT ) begin
@@ -211,30 +263,45 @@ module spi_register_io #(
 
 	// -- End Custom RTL --
 
-	spi #(
-		.DATA_WIDTH (DATA_WIDTH)	) spi_inst (
+	nipcb #(
+		.DATA_WIDTH (DATA_WIDTH)	) nipcb_inst (
 		.CLK (CLK),
 		.RESETn (RESETn),
 
-		.T_T0 (triggers[0]),
-		.I_tdata (iregs[0]),
-		.O_rdata (oregs[0]),
+		.T_ni_t (triggers[0]),
+		.F_ni_f (flags[0]),
+		.C_ni_c (configs[0]),
+		.I_stimulation_channel_select (iregs[0]),
+		.I_stimulation_cycles_high (iregs[1]),
+		.I_stimulation_cycles_low (iregs[2]),
+		.I_stimulation_cycles_delay (iregs[3]),
+		.I_stimulation_cycles_stall (iregs[4]),
+		.I_stimulation_cycles_count (iregs[5]),
+		.I_stimulation_magnitude_high (iregs[6]),
+		.I_stimulation_magnitude_low (iregs[7]),
+		.O_output (oregs[0]),
 
-		.csn (csn),
-		.sclk (sclk),
-		.sdio (sdio)
+		.ni_csn_hp_dac (ni_csn_hp_dac),
+		.ni_csn_adc (ni_csn_adc),
+		.ni_sdio (ni_sdio),
+		.ni_sclk (ni_sclk),
+		.ni_pga_gain (ni_pga_gain),
+		.ni_sel_ch (ni_sel_ch),
+		.ni_en_ch (ni_en_ch),
+
+		.IRQ (IRQ)
 	);
 
 endmodule
 
-module spi_ahb_interpreter #(
+module nipcb_ahb_interpreter #(
 	parameter integer DATA_WIDTH = 32,
 	parameter integer ADDR_BASE = 0,
 
 	localparam integer TRIG_COUNT = 1,
-	localparam integer FLAG_COUNT = 0,
-	localparam integer CONF_COUNT = 0,
-	localparam integer IREG_COUNT = 1,
+	localparam integer FLAG_COUNT = 1,
+	localparam integer CONF_COUNT = 1,
+	localparam integer IREG_COUNT = 8,
 	localparam integer OREG_COUNT = 1,
 	localparam integer DATA_BYTES = DATA_WIDTH / 8,
 	localparam integer REGS_COUNT = TRIG_COUNT + FLAG_COUNT + CONF_COUNT + IREG_COUNT + OREG_COUNT,
@@ -268,7 +335,8 @@ module spi_ahb_interpreter #(
 	input wire [DATA_WIDTH - 1:0] MDOUT
 );
 
-	`include "ahb_defs.v"
+  `define AHB_RSP_OKAY  1'b0
+  `define AHB_RSP_ERROR 1'b1
 
 	// Bus Registers
 	reg [ADDR_WIDTH - 1:0] haddr;
@@ -409,13 +477,13 @@ module spi_ahb_interpreter #(
 
 endmodule
 
-module spi_ahb #(
+module nipcb_ahb #(
 	parameter integer DATA_WIDTH = 32,
 
 	localparam integer TRIG_COUNT = 1,
-	localparam integer FLAG_COUNT = 0,
-	localparam integer CONF_COUNT = 0,
-	localparam integer IREG_COUNT = 1,
+	localparam integer FLAG_COUNT = 1,
+	localparam integer CONF_COUNT = 1,
+	localparam integer IREG_COUNT = 8,
 	localparam integer OREG_COUNT = 1,
 	localparam integer DATA_BYTES = DATA_WIDTH / 8,
 	localparam integer REGS_COUNT = TRIG_COUNT + FLAG_COUNT + CONF_COUNT + IREG_COUNT + OREG_COUNT,
@@ -441,9 +509,16 @@ module spi_ahb #(
 	output wire HRESP,
 
 	// Peripheral Ports
-	output	[0:0]	csn,
-	output	[0:0]	sclk,
-	inout	[0:0]	sdio
+	output	[0:0]	ni_csn_hp_dac,
+	output	[0:0]	ni_csn_adc,
+	inout	[0:0]	ni_sdio,
+	output	[0:0]	ni_sclk,
+	output	[2:0]	ni_pga_gain,
+	output	[3:0]	ni_sel_ch,
+	output	[3:0]	ni_en_ch,
+
+	// IRQ
+	output		IRQ
 );
 
 	// Signals
@@ -470,9 +545,9 @@ module spi_ahb #(
 	assign wren = memen && (memwe != 0);
 	assign rden = memen && (memwe == 0);
 	// Instantiations
-	spi_ahb_interpreter #(
+	nipcb_ahb_interpreter #(
 		.DATA_WIDTH (DATA_WIDTH)
-	) spi_ahb_interpreter_inst (
+	) nipcb_ahb_interpreter_inst (
 		.HCLK (HCLK),
 		.HRESETn (HRESETn),
 		.HADDR (HADDR),
@@ -499,9 +574,9 @@ module spi_ahb #(
 		.MDOUT (memdout)
 	);
 
-	spi_register_io #(
+	nipcb_register_io #(
 		.DATA_WIDTH (DATA_WIDTH)
-	) spi_register_io_inst (
+	) nipcb_register_io_inst (
 		.CLK (HCLK),
 		.RESETn (HRESETn),
 
@@ -514,9 +589,15 @@ module spi_ahb #(
 		.RVALID (rden),
 		.RERROR (rerror),
 
-		.csn (csn),
-		.sclk (sclk),
-		.sdio (sdio)
+		.ni_csn_hp_dac (ni_csn_hp_dac),
+		.ni_csn_adc (ni_csn_adc),
+		.ni_sdio (ni_sdio),
+		.ni_sclk (ni_sclk),
+		.ni_pga_gain (ni_pga_gain),
+		.ni_sel_ch (ni_sel_ch),
+		.ni_en_ch (ni_en_ch),
+
+		.IRQ (IRQ)
 	);
 
 endmodule
